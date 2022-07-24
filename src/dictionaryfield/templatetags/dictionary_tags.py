@@ -3,7 +3,8 @@ import re
 
 register = template.Library()
 
-name_re = re.compile('[^0-9a-zA-Z\_\-]+')
+name_re = re.compile('[^\da-zA-Z\_\-]+')
+
 
 @register.filter
 def field_class(name, replacement=''):

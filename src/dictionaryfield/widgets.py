@@ -20,7 +20,8 @@ class DictionaryWidget(widgets.MultiWidget):
 
     def __init__(self, *args, **kwargs):
         # Fields are passed as a parameter
-        super(DictionaryWidget, self).__init__([])
+        super().__init__([])
+        self.fields = None
 
     def decompress(self, values):
         if values:
@@ -55,12 +56,12 @@ class DictionaryWidget(widgets.MultiWidget):
             widget_attrs = {"id": "id_%s" % widget_id}
             if attrs:
                 widget_attrs.update(attrs)
-            widget_output = widget.render(widget_name, item_value, widget_attrs)
+            widget_output = widget.render(widget_name, item_value, widget_attrs, )
             child_widgets[key] = {'id': widget_id, 'name': widget_name, 'label': field.label, 'widget': widget_output,
                                   'help_text': field.help_text, 'value': item_value, 'required': widget.is_required}
         return {'widgets': child_widgets}
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         context = self.get_context(name, value, attrs)
         return mark_safe(loader.render_to_string(self.template_name, context))
 
