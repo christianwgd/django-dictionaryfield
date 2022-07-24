@@ -1,3 +1,5 @@
+from django.db.models import JSONField
+
 try:
     import simplejson as json
 except ImportError:
@@ -7,20 +9,19 @@ from collections import OrderedDict
 import datetime
 
 from django.core.exceptions import ValidationError
-from django.forms.forms import pretty_name
+from django.forms.utils import pretty_name
 from django.forms.utils import ErrorList, flatatt
-from django.utils import six
 from django.forms import fields
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+
 try:
     from django.forms.boundfield import UNSET
 except ImportError:
     UNSET = object()
 
-from jsonfield import JSONField
-from jsonfield.fields import JSONFormFieldBase
+from django.forms.fields import JSONField as JSONFormFieldBase
 
 from .extras import generate_field_name
 from .widgets import DictionaryWidget
@@ -37,7 +38,7 @@ class BoundFields(OrderedDict):
         :param form: Parent form
         :param name: Field name
         """
-        super(BoundFields, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.form = form
         self.name = name
@@ -52,7 +53,6 @@ class BoundFields(OrderedDict):
         # Convert children to bound fields
         for f_name, field in self.items():
             self[f_name] = field.get_bound_field(form, self.child_name(name, f_name))
-
 
     def update_initial(self):
         """
@@ -71,7 +71,7 @@ class BoundFields(OrderedDict):
 
         # Convert JSON string to a dictionary
         # https://code.djangoproject.com/ticket/23549
-        if isinstance(initial, six.string_types):
+        if isinstance(initial, str):
             initial = json.loads(initial)
 
         if not isinstance(initial, dict):
@@ -85,8 +85,8 @@ class BoundFields(OrderedDict):
         """
         Errors are combined into one in DictionaryFormField.clean()
         Extract them so each child
-        :param form Form:
-        :param name str: form field name
+        :param form form:
+        :param name name: form field name
         """
         fields_errors = self.errors
         if not fields_errors:
@@ -156,7 +156,7 @@ class BoundFields(OrderedDict):
             name = self.html_name
         else:
             name = self.html_initial_name
-        return force_text(widget.render(name, self.value(), attrs=attrs))
+        return force_str(widget.render(name, self.value(), attrs=attrs))
 
     def value(self):
         """
@@ -205,24 +205,23 @@ class DictionaryFormField(JSONFormFieldBase, fields.Field):
 
         # Allow only DictionaryWidget and its subclasses to act as widget
         if 'widget' in kwargs and not (
-                    isinstance(kwargs['widget'], DictionaryWidget) or issubclass(kwargs['widget'], DictionaryWidget)):
+                isinstance(kwargs['widget'], DictionaryWidget) or issubclass(kwargs['widget'], DictionaryWidget)):
             kwargs.pop('widget')
 
         # Django 1.7 passes max_length for some reason
         kwargs.pop('max_length', None)
 
-        super(DictionaryFormField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.widget.fields = self.fields
 
     def get_bound_field(self, form, field_name):
         """
         Instead of BoundField return special BoundFields that supports dictionary of sub-fields
-        :param form Form:
-        :param field_name str: field name
+        :param form form:
+        :param field_name field_name: field name
         """
         return BoundFields(form, field_name, self.fields)
-
 
     def clean(self, value):
         """
@@ -247,7 +246,7 @@ class DictionaryFormField(JSONFormFieldBase, fields.Field):
 
     def has_changed(self, initial, data):
         # make sure initial is deserialized before comparing
-        if isinstance(initial, six.string_types):
+        if isinstance(initial, str):
             try:
                 initial = json.loads(initial)
             except (TypeError, ValueError):
@@ -268,7 +267,7 @@ class DictionaryField(JSONField):
 
     def __init__(self, *args, **kwargs):
         self.fields = kwargs.pop('fields', ())
-        super(DictionaryField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def formfield(self, **kwargs):
         defaults = {
@@ -276,7 +275,7 @@ class DictionaryField(JSONField):
             'widget': self.form_class.widget
         }
         defaults.update(kwargs)
-        field = super(DictionaryField, self).formfield(**defaults)
+        field = super().formfield(**defaults)
         field.is_hidden = False
         # we don't this artifact here
         if field.help_text == "Enter valid JSON":
