@@ -30,10 +30,12 @@ def pytest_configure():
 def sample_field():
     return DictionaryField(
         "What is the first volume and issue in which the journal published full-text English?",
-        fields=OrderedDict([
-            ('volume', fields.CharField(label='Volume', required=True)),
-            ('issue', fields.CharField(label='Issue', required=False, validators=[RegexValidator(r'\d+')]))
-        ])
+        kwargs = {
+                'fields': OrderedDict([
+                ('volume', fields.CharField(label='Volume', required=True)),
+                ('issue', fields.CharField(label='Issue', required=False, validators=[RegexValidator(r'\d+')]))
+            ])
+        }
     )
 
 
@@ -41,14 +43,16 @@ def sample_field():
 def sample_nested_field():
     return DictionaryField(
         "Nested dictionary fields",
-        fields=OrderedDict([
-            ('sub1', DictionaryFormField(label="Sub 1", fields=OrderedDict([
-                ('volume', fields.CharField(label='Volume', required=True)),
-                ('issue', fields.CharField(label='Issue', required=True))
-            ]))),
-            ('sub2', DictionaryFormField(label="Sub 2", fields=OrderedDict([
-                ('author', fields.CharField(label='Author', required=True)),
-                ('book', fields.CharField(label='Book', required=True)),
-            ]))),
-        ])
+        kwargs={
+            'fields': OrderedDict([
+                ('sub1', DictionaryFormField(label="Sub 1", fields=OrderedDict([
+                    ('volume', fields.CharField(label='Volume', required=True)),
+                    ('issue', fields.CharField(label='Issue', required=True))
+                ]))),
+                ('sub2', DictionaryFormField(label="Sub 2", fields=OrderedDict([
+                    ('author', fields.CharField(label='Author', required=True)),
+                    ('book', fields.CharField(label='Book', required=True)),
+                ]))),
+            ])
+        }
     )

@@ -201,15 +201,12 @@ class DictionaryFormField(JSONFormFieldBase, fields.Field):
     }
 
     def __init__(self, fields, *args, **kwargs):
-        self.fields = fields
+        self.fields = kwargs.pop('fields', ())
 
         # Allow only DictionaryWidget and its subclasses to act as widget
         if 'widget' in kwargs and not (
                 isinstance(kwargs['widget'], DictionaryWidget) or issubclass(kwargs['widget'], DictionaryWidget)):
             kwargs.pop('widget')
-
-        # Django 1.7 passes max_length for some reason
-        kwargs.pop('max_length', None)
 
         super().__init__(*args, **kwargs)
 
